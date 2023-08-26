@@ -1,0 +1,102 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>가위바위보</title>
+    <style>
+      #computer {
+        width: 142px;
+        height: 200px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="computer"></div>
+    <div>
+      <button id="scissors" class="btn">가위</button>
+      <button id="rock" class="btn">바위</button>
+      <button id="paper" class="btn">보</button>
+    </div>
+    <div id="score">0</div>
+    <script>
+      const $computer = document.querySelector('#computer');
+      const $score = document.querySelector('#score');
+      const $rock = document.querySelector('#rock');
+      const $scissors = document.querySelector('#scissors');
+      const $paper = document.querySelector('#paper');
+      const IMG_URL = './rsp.png';
+      const rspX = {
+        scissors: '0',
+        rock: '-220px',
+        paper: '-440px',
+      };
+
+      const scoreTable = {
+        rock: 0,
+        scissors: 1,
+        paper: -1,
+      };
+
+      let computerChoice = 'scissors';
+      const changeComputerHand = () => {
+        if (computerChoice === 'rock') {
+          computerChoice = 'scissors';
+        } else if (computerChoice === 'scissors') {
+          computerChoice = 'paper';
+        } else if (computerChoice === 'paper') {
+          computerChoice = 'rock';
+        }
+        $computer.style.background = `url(${IMG_URL}) ${rspX[computerChoice]} 0`;
+        $computer.style.backgroundSize = 'auto 200px';
+      };
+      let intervalId = setInterval(changeComputerHand, 50);
+      // 버그 발생. 이유: clickButton 5번 호출, 인터벌 1번, 2번, 3번, 4번, 5번(맨마지막 인터벌 id만 등록)
+      // 그 다음에 버튼 클릭하면 5번만 취소.
+      let clickable = true;
+      let me = 0;
+      let computer = 0;
+      const clickButton = () => {
+        if (clickable) {
+          clearInterval(intervalId);
+          clickable = false;
+          const myChoice =
+            event.target.textContent === '바위'
+              ? 'rock'
+              : event.target.textContent === '가위'
+              ? 'scissors'
+              : 'paper';
+          const myScore = scoreTable[myChoice];
+          const computerScore = scoreTable[computerChoice];
+          const diff = myScore - computerScore;
+          let message;
+          if ([2, -1].includes(diff)) {
+            me += 1;
+            message = '승리';
+          } else if ([-2, 1].includes(diff)) {
+            computer += 1;
+            message = '패배';
+          } else {
+            message = '무승부';
+          }
+          if (me >= 3) {
+            $score.textContent = `나의 승리 ${me}:${computer}`;
+          } else if (computer >= 3) {
+            $score.textContent = `컴퓨터의 승리 ${me}:${computer}`;
+          } else {
+            $score.textContent = `${message} ${me}:${computer}`;
+            setTimeout(() => {
+              clickable = true;
+              intervalId = setInterval(changeComputerHand, 50);
+            }, 1000);
+          }
+        }
+      };
+      $rock.addEventListener('click', clickButton);
+      $scissors.addEventListener('click', clickButton);
+      $paper.addEventListener('click', clickButton);
+
+      $computer.style.background = `url(${IMG_URL}) 0 0`;
+      $computer.style.backgroundSize = 'auto 200px';
+    </script>
+  </body>
+</html>
