@@ -52,6 +52,9 @@
       const colors = ['red', 'orange', 'yellow', 'green', 'white', 'pink'];
       let colorCopy = colors.concat(colors);
       let shuffled = [];
+      let clicked = [];
+      let completed = [];
+      let clickable = false;
 
       function shuffle() {
         // 피셔-예이츠 셔플
@@ -76,11 +79,54 @@
         card.appendChild(cardInner);
         return card;
       }
-
+      function onClickCard() {
+        if (!clickable || completed.includes(this) || clicked[0] === this) {
+          return;
+        }
+        this.classList.toggle('flipped');
+        clicked.push(this);
+        if (clicked.length !== 2) {
+          return;
+        }
+        const firstBackColor =
+          clicked[0].querySelector('.card-back').style.backgroundColor;
+        const secondBackColor =
+          clicked[1].querySelector('.card-back').style.backgroundColor;
+        if (firstBackColor === secondBackColor) {
+          // 두 카드가 같은 카드면
+          completed.push(clicked[0]);
+          completed.push(clicked[1]);
+          clicked = [];
+          if (completed.length !== total) {
+            return;
+          }
+          setTimeout(() => {
+            alert(`축하합니다!`);
+            resetGame();
+          }, 1000);
+          return;
+        }
+        // 두 카드가 다르면
+        setTimeout(() => {
+          clicked[0].classList.remove('flipped');
+          clicked[1].classList.remove('flipped');
+          clicked = [];
+        }, 500);
+      }
+      function resetGame() {
+        $wrapper.innerHTML = '';
+        colorCopy = colors.concat(colors);
+        shuffled = [];
+        completed = [];
+        clickable = false;
+        startGame();
+      }
       function startGame() {
+        clickable = false;
         shuffle();
         for (let i = 0; i < total; i += 1) {
           const card = createCard(i);
+          card.addEventListener('click', onClickCard);
           $wrapper.appendChild(card);
         }
         document.querySelectorAll('.card').forEach((card, index) => {
@@ -95,6 +141,7 @@
           document.querySelectorAll('.card').forEach((card) => {
             card.classList.remove('flipped');
           });
+          clickable = true;
         }, 5000);
       }
       startGame();
